@@ -1,0 +1,34 @@
+# VM disks and installation media
+*.qcow
+*.qcow2
+*.img
+*.vhd
+*.vhdx
+*.vmdk
+*.iso
+
+# Backups and local output
+backups/
+WindowsImageBackup/
+*.bak
+*.vhdx.metadata
+
+# Credentials and private keys
+.env
+.env.*
+!.env.example
+secrets/
+credentials/
+*.pem
+*.key
+*.pfx
+*.p12
+id_rsa*
+id_ed25519*
+
+# Editor and OS files
+.vscode/
+.idea/
+*~
+.DS_Store
+Thumbs.db
