@@ -14,3 +14,7 @@ Windows infrastructure lab on Debian with QEMU/KVM and libvirt.
 ## Active Directory
 
 - [Domain controller deployment](active-directory/README.md)
+
+## PowerShell
+
+- [Deployment and verification scripts](powershell/README.md)
