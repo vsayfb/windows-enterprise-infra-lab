@@ -18,6 +18,14 @@ Windows infrastructure lab on Debian with QEMU/KVM and libvirt.
 - [Domain controller deployment](active-directory/README.md)
 - [Engineering accounts and security group](active-directory/engineering.md)
 
+## Group Policy
+
+- [Engineering user policy](group-policy/README.md)
+
+## File sharing
+
+- [Engineering file share](file-sharing/README.md)
+
 ## PowerShell
 
 - [Deployment and verification scripts](powershell/README.md)

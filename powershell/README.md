@@ -124,3 +124,28 @@ Run the same command after each restart. Enter credentials authorized to join co
 The network configuration is intended for the isolated lab: no default gateway is configured, and conflicting static addresses are rejected. Computers in another domain and domain controllers are rejected. On a joined computer, the script preserves network settings, performs DC discovery, and tests the secure channel.
 
 See [client networking and domain join](../windows-networking/domain-join.md) for manual setup and user-session verification.
+
+## Provision a department share
+
+[New-DepartmentShare.ps1](New-DepartmentShare.ps1) creates a protected parent folder and a department folder with inherited administrative permissions, then publishes an SMB share.
+
+Run locally in elevated Windows PowerShell on the file server:
+
+```powershell
+.\New-DepartmentShare.ps1 `
+    -RootPath 'C:\CorpShares' `
+    -ShareName 'Engineering' `
+    -AccessGroup 'CORP\GG_Engineering'
+```
+
+| Parameter | Purpose |
+|---|---|
+| `RootPath` | Dedicated local parent folder for department shares |
+| `ShareName` | Department folder name and SMB share name |
+| `AccessGroup` | Existing department security group in `DOMAIN\Name` form |
+
+The script grants Administrators and SYSTEM inheritable NTFS Full Control at the parent. The department group receives NTFS Modify and SMB Change. Administrators receive SMB Full access.
+
+Existing folders and shares are checked before configuration. Conflicting permissions, disabled inheritance on a department folder, or a share mapped to another path stop execution. Matching existing configuration can be reused. No files are deleted, and no credentials are stored.
+
+See [Engineering file share](../file-sharing/README.md) for the permission layout and client access tests.
