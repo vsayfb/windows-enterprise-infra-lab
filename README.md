@@ -14,6 +14,7 @@ Windows infrastructure lab on Debian with QEMU/KVM and libvirt.
 ## Active Directory
 
 - [Domain controller deployment](active-directory/README.md)
+- [Engineering accounts and security group](active-directory/engineering.md)
 
 ## PowerShell
 

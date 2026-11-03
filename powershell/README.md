@@ -54,3 +54,44 @@ Run the same command after each restart. Supply an account authorized to add dom
 The script does not configure a default gateway or replace conflicting static addresses. After promotion, the verification stage preserves the DC's DNS client configuration. Inspect `dcdiag` and `repadmin` output for test failures and replication errors.
 
 Reference: [Install-ADDSDomainController](https://learn.microsoft.com/en-us/powershell/module/addsdeployment/install-addsdomaincontroller?view=windowsserver2025-ps).
+
+## Provision department users
+
+[New-ADDepartmentUser.ps1](New-ADDepartmentUser.ps1) creates a department OU, a global security group, and a user account with direct group membership.
+
+Run in Windows PowerShell with permissions to manage users, groups, and OUs in the selected domain:
+
+```powershell
+.\New-ADDepartmentUser.ps1 `
+    -DomainName 'corp.test' `
+    -OUName 'Engineering' `
+    -GroupName 'GG_Engineering' `
+    -AccountName 'ali' `
+    -DisplayName 'Ali'
+```
+
+| Parameter | Purpose |
+|---|---|
+| `DomainName` | Existing AD domain DNS name |
+| `OUName` | Department OU name |
+| `GroupName` | Global security group name and SAM account name |
+| `AccountName` | User SAM account name; also used for the UPN prefix |
+| `DisplayName` | User object name and display name |
+| `ParentPath` | Existing parent OU distinguished name; defaults to the domain root |
+
+Use a different OU, group, and account for another department:
+
+```powershell
+.\New-ADDepartmentUser.ps1 `
+    -DomainName 'corp.test' `
+    -OUName 'Sales' `
+    -GroupName 'GG_Sales' `
+    -AccountName 'ayse' `
+    -DisplayName 'Ayse'
+```
+
+To create a department beneath an existing OU, supply its distinguished name with `-ParentPath`, for example `-ParentPath 'OU=Departments,DC=corp,DC=test'`. The parent OU must already exist.
+
+OU names support letters, digits, spaces, underscores, and hyphens. Group names support letters, digits, underscores, and hyphens. New or disabled accounts require a temporary password entered at a secure prompt. Existing enabled accounts retain their passwords and password-change state. Existing objects with conflicting locations or group settings are rejected.
+
+See [Engineering accounts and security group](../active-directory/engineering.md) for the lab structure and verification commands.

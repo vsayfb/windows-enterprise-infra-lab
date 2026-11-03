@@ -58,3 +58,7 @@ dcdiag /test:Advertising /test:SysVolCheck /test:NetLogons
 | Advertising | Domain controller service advertisement |
 | SysVolCheck | SYSVOL readiness |
 | NetLogons | Access to SYSVOL and NETLOGON shares |
+
+## Accounts and groups
+
+- [Engineering accounts and security group](engineering.md)
