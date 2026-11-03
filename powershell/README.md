@@ -175,3 +175,30 @@ Use `-DomainName`, `-Filter`, and `-SearchBase` to select computers. Use `-Overw
 ```
 
 Use `Export-Csv` to save the output. See [domain user report](../docs/user-report.md) for all parameters, export commands, and validation results.
+
+## Back up System State
+
+[Backup-SystemState.ps1](Backup-SystemState.ps1) installs Windows Server Backup if needed and creates a System State backup on an existing local NTFS volume. Run in elevated Windows PowerShell:
+
+```powershell
+.\Backup-SystemState.ps1 -BackupTarget 'E:'
+```
+
+The script retains the backup confirmation prompt and lists catalog versions after completion. It does not partition or format the target disk.
+
+## Recover backup files
+
+[Restore-BackupFiles.ps1](Restore-BackupFiles.ps1) restores a file or folder recursively to a separate directory:
+
+```powershell
+.\Restore-BackupFiles.ps1 `
+    -BackupTarget 'E:' `
+    -Version '11/03/2026-16:11' `
+    -MachineName 'DC01' `
+    -SourcePath 'C:\Windows\SYSVOL\domain\Policies' `
+    -RecoveryTarget 'C:\RestoreTest'
+```
+
+Supply the version identifier from `wbadmin get versions`. `MachineName` defaults to the current computer. The recovery destination must be new or empty and outside the source hierarchy and backup volume. Confirmation is interactive. The script displays recovered file paths and a count; it does not perform System State recovery.
+
+See [System State backup and file recovery](../backup-recovery/README.md) for the catalog checks, test results, and storage limitations.

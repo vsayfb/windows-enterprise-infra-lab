@@ -35,3 +35,7 @@ Windows infrastructure lab on Debian with QEMU/KVM and libvirt.
 - [PowerShell remote administration](docs/remote-administration.md)
 - [Domain computer inventory](docs/inventory.md)
 - [Domain user report](docs/user-report.md)
+
+## Backup and recovery
+
+- [System State backup and file recovery](backup-recovery/README.md)
