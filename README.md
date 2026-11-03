@@ -29,3 +29,8 @@ Windows infrastructure lab on Debian with QEMU/KVM and libvirt.
 ## PowerShell
 
 - [Deployment and verification scripts](powershell/README.md)
+
+## Administration and reporting
+
+- [PowerShell remote administration](docs/remote-administration.md)
+- [Domain computer inventory](docs/inventory.md)

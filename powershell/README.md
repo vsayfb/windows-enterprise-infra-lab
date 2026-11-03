@@ -149,3 +149,17 @@ The script grants Administrators and SYSTEM inheritable NTFS Full Control at the
 Existing folders and shares are checked before configuration. Conflicting permissions, disabled inheritance on a department folder, or a share mapped to another path stop execution. Matching existing configuration can be reused. No files are deleted, and no credentials are stored.
 
 See [Engineering file share](../file-sharing/README.md) for the permission layout and client access tests.
+
+## Collect and export inventory
+
+[Get-DomainInventory.ps1](Get-DomainInventory.ps1) queries computer accounts in the current domain or a supplied domain, applies AD filters, and collects live inventory over WinRM. [Export-InventoryCsv.ps1](Export-InventoryCsv.ps1) exports those objects separately.
+
+```powershell
+$Inventory = .\Get-DomainInventory.ps1
+
+$Inventory | Format-Table ComputerName, OS, RAM_GB, Status, Error
+
+$Inventory | .\Export-InventoryCsv.ps1 -Path "$env:TEMP\inventory.csv"
+```
+
+Use `-DomainName`, `-Filter`, and `-SearchBase` to select computers. Use `-Overwrite` on the exporter to replace an existing CSV. See [domain computer inventory](../docs/inventory.md) for parameters, filter examples, and validation results.
