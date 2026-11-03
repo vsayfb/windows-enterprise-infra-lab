@@ -6,10 +6,12 @@ Windows infrastructure lab on Debian with QEMU/KVM and libvirt.
 
 - [Virtual network](virtualization/README.md)
 - [DC01 installation](virtualization/dc01.md)
+- [CLIENT01 installation](virtualization/client01.md)
 
 ## Windows networking
 
 - [DC01 static IP and DNS configuration](windows-networking/README.md)
+- [Client networking and domain join](windows-networking/domain-join.md)
 
 ## Active Directory
 

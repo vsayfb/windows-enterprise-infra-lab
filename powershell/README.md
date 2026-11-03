@@ -95,3 +95,32 @@ To create a department beneath an existing OU, supply its distinguished name wit
 OU names support letters, digits, spaces, underscores, and hyphens. Group names support letters, digits, underscores, and hyphens. New or disabled accounts require a temporary password entered at a secure prompt. Existing enabled accounts retain their passwords and password-change state. Existing objects with conflicting locations or group settings are rejected.
 
 See [Engineering accounts and security group](../active-directory/engineering.md) for the lab structure and verification commands.
+
+## Join a computer to the domain
+
+[Join-DomainComputer.ps1](Join-DomainComputer.ps1) configures a hostname, static IPv4 address, and domain DNS server, discovers a DC, and joins an existing domain. Run locally in elevated Windows PowerShell on a Windows edition that supports AD domain membership.
+
+```powershell
+.\Join-DomainComputer.ps1 `
+    -ComputerName 'CLIENT01' `
+    -IPAddress '10.10.10.20' `
+    -DNSServer '10.10.10.10' `
+    -DomainName 'corp.test' `
+    -PrefixLength 24 `
+    -InterfaceName 'Ethernet'
+```
+
+| Parameter | Purpose |
+|---|---|
+| `ComputerName` | Target Windows hostname |
+| `IPAddress` | Computer's static IPv4 address |
+| `DNSServer` | AD DNS server IPv4 address |
+| `DomainName` | Existing AD domain DNS name |
+| `PrefixLength` | Subnet prefix length; default `24` |
+| `InterfaceName` | Local adapter alias; default `Ethernet` |
+
+Run the same command after each restart. Enter credentials authorized to join computers when prompted. Credentials are not stored in the script.
+
+The network configuration is intended for the isolated lab: no default gateway is configured, and conflicting static addresses are rejected. Computers in another domain and domain controllers are rejected. On a joined computer, the script preserves network settings, performs DC discovery, and tests the secure channel.
+
+See [client networking and domain join](../windows-networking/domain-join.md) for manual setup and user-session verification.
