@@ -163,3 +163,15 @@ $Inventory | .\Export-InventoryCsv.ps1 -Path "$env:TEMP\inventory.csv"
 ```
 
 Use `-DomainName`, `-Filter`, and `-SearchBase` to select computers. Use `-Overwrite` on the exporter to replace an existing CSV. See [domain computer inventory](../docs/inventory.md) for parameters, filter examples, and validation results.
+
+## Report domain users
+
+[Get-DomainUserReport.ps1](Get-DomainUserReport.ps1) returns user account objects from Active Directory. Filter by enabled status, OU, Department, or account name:
+
+```powershell
+.\Get-DomainUserReport.ps1 -Enabled $true -OUName 'Engineering'
+
+.\Get-DomainUserReport.ps1 -Department 'Engineering'
+```
+
+Use `Export-Csv` to save the output. See [domain user report](../docs/user-report.md) for all parameters, export commands, and validation results.
