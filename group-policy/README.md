@@ -1,10 +1,10 @@
-# Engineering user policy
+# Engineering Kullanıcı Policy'si
 
-`Engineering-User-Policy` is linked to `OU=Engineering,DC=corp,DC=test`. User settings apply according to the user account's OU location and GPO filtering, rather than membership in `GG_Engineering`.
+`Engineering-User-Policy` GPO'su, Engineering organizasyon birimine (`OU=Engineering,DC=corp,DC=test`) bağlıdır. Kullanıcı ayarlarının kapsamı, hesabın bulunduğu OU ve GPO filtrelerine bağlıdır.
 
-## GPO definition and link
+## GPO Oluşturma ve OU'ya Bağlama
 
-GPO creation and linking commands, executed in elevated Windows PowerShell on DC01:
+Komutlar, DC01 üzerinde yönetici yetkili Windows PowerShell oturumunda çalıştırılır.
 
 ```powershell
 New-GPO -Name 'Engineering-User-Policy'
@@ -14,20 +14,20 @@ New-GPLink `
     -Target 'OU=Engineering,DC=corp,DC=test'
 ```
 
-## Policy configuration
+## Settings ve Control Panel Kısıtlaması
 
-Administrative Template configuration in `Engineering-User-Policy`:
+`Engineering-User-Policy` içindeki Administrative Template ayarı:
 
-| Property | Value |
+| Ayar | Değer |
 |---|---|
-| Policy path | User Configuration → Policies → Administrative Templates → Control Panel |
-| Setting | Prohibit access to Control Panel and PC settings |
-| Test state | Enabled |
-| Final state | Not Configured |
+| Policy yolu | User Configuration → Policies → Administrative Templates → Control Panel |
+| Kısıtlama | Prohibit access to Control Panel and PC settings |
+| Test durumu | Enabled |
+| Mevcut durum | Not Configured |
 
-## Policy application
+## Policy Yenileme ve Uygulanan GPO Listesi
 
-User policy refresh and reporting were performed in Ali's non-elevated session on CLIENT01:
+Komutlar, CLIENT01 üzerinde Ali'nin standart kullanıcı oturumunda çalıştırılır.
 
 ```powershell
 gpupdate /target:user /force
@@ -35,18 +35,16 @@ gpupdate /target:user /force
 gpresult /scope user /r
 ```
 
-`Engineering-User-Policy` appeared under **Applied Group Policy Objects**. Settings and Control Panel access was blocked.
+`gpresult` çıktısındaki **Applied Group Policy Objects** listesinde `Engineering-User-Policy` bulunur.
 
-## Final configuration
+## Mevcut Kısıtlama Ayarı
 
-The setting was returned to **Not Configured**. After `gpupdate /target:user /force`, Settings and Control Panel opened successfully. The GPO and OU link remain configured.
+Kısıtlama **Not Configured** durumundadır; Settings ve Control Panel erişimi açıktır. GPO, Engineering organizasyon birimine bağlıdır.
 
-## Validation
+## Test Sonuçları
 
-| Check | Result |
+| Test | Sonuç |
 |---|---|
-| Settings and Control Panel with restriction enabled | Blocked for Ali |
-| `gpresult` in Ali's session | `Engineering-User-Policy` listed as applied |
-| Settings and Control Panel after reverting and refreshing policy | Opened successfully |
-
-This policy restricts access to the interfaces. It does not replace account privileges or resource permissions.
+| Kısıtlama etkinken Settings ve Control Panel | Ali için erişim yok |
+| Ali'nin oturumunda `gpresult` | `Engineering-User-Policy` uygulanmış GPO listesinde |
+| Kısıtlama kapalıyken policy yenilemesi sonrası Settings ve Control Panel | Erişim var |

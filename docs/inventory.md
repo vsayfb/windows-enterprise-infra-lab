@@ -1,10 +1,10 @@
-# Domain computer inventory
+# Domain Bilgisayar Envanteri
 
-[Get-DomainInventory.ps1](../powershell/Get-DomainInventory.ps1) discovers AD computer accounts and collects live system information over WinRM. [Export-InventoryCsv.ps1](../powershell/Export-InventoryCsv.ps1) writes the returned objects to CSV.
+[Get-DomainInventory.ps1](../powershell/Get-DomainInventory.ps1), AD bilgisayar hesaplarını sorgular ve WinRM üzerinden sistem bilgilerini toplar. [Export-InventoryCsv.ps1](../powershell/Export-InventoryCsv.ps1), sonuçları CSV'ye aktarır.
 
-Execution requires the ActiveDirectory module and authorized WinRM access to each target. Examples use an administrative Windows PowerShell session on DC01 with the repository root as the working directory.
+ActiveDirectory modülü ve hedef bilgisayarlarda WinRM erişim yetkisi gereklidir. Komutlar, DC01 üzerinde yönetici yetkili Windows PowerShell oturumunda çalıştırılır. Çalışma dizini repository köküdür.
 
-## Inventory collection
+## Bilgisayar Envanteri Sorgulama
 
 ```powershell
 $Inventory = .\powershell\Get-DomainInventory.ps1
@@ -12,15 +12,15 @@ $Inventory = .\powershell\Get-DomainInventory.ps1
 $Inventory | Format-Table ComputerName, OS, RAM_GB, Status, Error
 ```
 
-| Parameter | Purpose |
+| Parametre | İşlev |
 |---|---|
-| `DomainName` | AD domain to query; defaults to the current domain |
-| `Filter` | `Get-ADComputer` filter; defaults to `Enabled -eq $true` |
-| `SearchBase` | Parent distinguished name for an OU or container search, including descendants |
+| `DomainName` | Sorgulanacak domain; varsayılan değer mevcut domain |
+| `Filter` | `Get-ADComputer` filtresi; varsayılan değer `Enabled -eq $true` |
+| `SearchBase` | Alt nesneleriyle birlikte sorgulanacak OU veya container'ın distinguished name değeri |
 
-Each record contains `ComputerName`, `DNSHostName`, `Domain`, `OS`, `RAM_GB`, `LogicalCPUs`, `LastBoot`, `Status`, and `Error`. A failed connection produces a failed record without stopping collection from other computers.
+Her kayıt `ComputerName`, `DNSHostName`, `Domain`, `OS`, `RAM_GB`, `LogicalCPUs`, `LastBoot`, `Status` ve `Error` alanlarını içerir.
 
-## Computer selection
+## Bilgisayar Adı ve OU Filtreleri
 
 ```powershell
 $Clients = .\powershell\Get-DomainInventory.ps1 -Filter "Name -like 'CLIENT*'"
@@ -29,9 +29,7 @@ $DomainControllers = .\powershell\Get-DomainInventory.ps1 `
     -SearchBase 'OU=Domain Controllers,DC=corp,DC=test'
 ```
 
-`SearchBase` restricts discovery to computer accounts in the specified directory subtree.
-
-## CSV export
+## Envanteri CSV'ye Aktarma
 
 ```powershell
 $Inventory |
@@ -41,13 +39,11 @@ Import-Csv "$env:TEMP\inventory.csv" |
     Format-Table ComputerName, OS, RAM_GB, Status
 ```
 
-`-Overwrite` permits replacement of an existing CSV. The exporter accepts inventory objects; `Format-Table` produces display data unsuitable for export. CSV fields are imported as strings.
+## Test Sonuçları
 
-## Validation
-
-| Test | Result |
+| Test | Sonuç |
 |---|---|
-| Current-domain collection | CLIENT01 and DC01 returned Success; both reported 4 GB RAM |
-| CSV export and reimport | Completed |
-| Name filter `CLIENT*` | CLIENT01 only |
-| Domain Controllers OU search | DC01 only |
+| Mevcut domain sorgusu | CLIENT01 ve DC01; her biri 4 GB RAM |
+| CSV dışa aktarma ve içe aktarma | Başarılı |
+| `CLIENT*` ad filtresi | Yalnızca CLIENT01 |
+| Domain Controllers OU sorgusu | Yalnızca DC01 |

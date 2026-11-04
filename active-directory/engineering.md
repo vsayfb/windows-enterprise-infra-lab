@@ -1,6 +1,6 @@
-# Engineering accounts and security group
+# Engineering Kullanıcıları ve Güvenlik Grubu
 
-The Engineering OU contains department accounts and the `GG_Engineering` global security group. Group membership is assigned explicitly; storing an account in the OU does not grant membership or resource access.
+Engineering organizasyon birimi (OU), departman kullanıcılarını ve Global kapsamlı `GG_Engineering` güvenlik grubunu içerir. Departman kaynaklarının erişim izinleri bu grup üzerinden yönetilir.
 
 ```text
 corp.test
@@ -10,17 +10,15 @@ corp.test
         └── Member: ali
 ```
 
-| Object | Distinguished name |
+| Nesne | Distinguished name |
 |---|---|
-| Organizational unit | `OU=Engineering,DC=corp,DC=test` |
-| User | `CN=Ali,OU=Engineering,DC=corp,DC=test` |
-| Security group | `CN=GG_Engineering,OU=Engineering,DC=corp,DC=test` |
+| OU | `OU=Engineering,DC=corp,DC=test` |
+| Kullanıcı | `CN=Ali,OU=Engineering,DC=corp,DC=test` |
+| Güvenlik grubu | `CN=GG_Engineering,OU=Engineering,DC=corp,DC=test` |
 
-`GG_Engineering` is a Global security group used for Engineering resource permissions.
+## Departman Kullanıcısı Oluşturma
 
-## Account provisioning
-
-Provisioning requires the ActiveDirectory module and permissions to manage users, groups, and OUs in `corp.test`. The example uses the repository root as its working directory.
+Script, ActiveDirectory modülü ve `corp.test` üzerinde kullanıcı, grup ve OU yönetim yetkisi gerektirir. Komutun çalışma dizini repository köküdür.
 
 ```powershell
 .\powershell\New-ADDepartmentUser.ps1 `
@@ -31,11 +29,9 @@ Provisioning requires the ActiveDirectory module and permissions to manage users
     -DisplayName 'Ali'
 ```
 
-The script creates missing objects, prompts for a temporary password for new or disabled accounts, and adds direct group membership. Accounts are enabled after a successful password reset.
+Script, eksik OU, grup ve kullanıcıyı oluşturur; kullanıcıyı gruba ekler. Yeni veya devre dışı hesaplar için geçici parola ister ve hesabı etkinleştirir. Mevcut etkin hesapların parola ayarları korunur.
 
-Existing enabled accounts retain their passwords and password-change state. Accounts outside the Engineering OU and groups with a conflicting location or category are rejected.
-
-## OU and group properties
+## Organizasyon Birimi ve Güvenlik Grubu Bilgileri
 
 ```powershell
 Get-ADOrganizationalUnit -Identity 'OU=Engineering,DC=corp,DC=test' `
@@ -46,7 +42,7 @@ Get-ADGroup 'GG_Engineering' |
     Select-Object Name, GroupScope, GroupCategory, DistinguishedName
 ```
 
-## Account and membership verification
+## Kullanıcı Bilgileri ve Grup Üyeleri
 
 ```powershell
 Get-ADUser 'ali' -Properties pwdLastSet |
@@ -56,4 +52,4 @@ Get-ADGroupMember 'GG_Engineering' |
     Select-Object Name, SamAccountName
 ```
 
-`pwdLastSet` is `0` when a password change is required at next logon.
+`pwdLastSet` değeri `0` olan hesaplarda sonraki oturum açılışında parola değişikliği zorunludur.

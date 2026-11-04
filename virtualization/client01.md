@@ -1,29 +1,29 @@
-# CLIENT01 installation
+# CLIENT01 Kurulumu
 
-CLIENT01 runs Windows 11 Enterprise Evaluation on QEMU/KVM. It is connected to the isolated `corp-lab` network and joined to `corp.test`.
+CLIENT01, QEMU/KVM üzerinde Windows 11 Enterprise Evaluation kullanır. İzole `corp-lab` ağına ve `corp.test` domain'ine bağlıdır.
 
-## Configuration
+## Yapılandırma
 
-| Component | Configuration |
+| Bileşen | Yapılandırma |
 |---|---|
-| VM name and guest hostname | `CLIENT01` |
-| Operating system | Windows 11 Enterprise Evaluation |
-| Network | `corp-lab` |
+| VM adı ve bilgisayar adı | `CLIENT01` |
+| İşletim sistemi | Windows 11 Enterprise Evaluation |
+| Ağ | `corp-lab` |
 | Domain | `corp.test` |
 
-## Guest hostname
+## Bilgisayar Adı
 
-The guest hostname is set before domain join. `Rename-Computer` requires elevation and restarts Windows.
+`Rename-Computer`, bilgisayar adını `CLIENT01` olarak ayarlar ve Windows'u yeniden başlatır. Komut, domain üyeliği öncesinde yönetici yetkisiyle çalıştırılır.
 
 ```powershell
 Rename-Computer -NewName 'CLIENT01' -Restart
 ```
 
-Hostname and adapter queries:
+Bilgisayar adı ve ağ adaptörü sorguları:
 
 ```powershell
 hostname
 Get-NetAdapter
 ```
 
-Networking configuration: [client networking and domain join](../windows-networking/domain-join.md).
+[Ağ yapılandırması ve domain üyeliği](../windows-networking/domain-join.md)

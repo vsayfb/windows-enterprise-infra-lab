@@ -1,14 +1,14 @@
-# Engineering file share
+# Engineering Dosya Paylaşımı
 
-The Engineering share provides network access to `C:\CorpShares\Engineering` on DC01. Access is controlled by both the NTFS folder ACL and the SMB share ACL.
+Engineering paylaşımı, DC01 üzerindeki `C:\CorpShares\Engineering` klasörüne ağ üzerinden erişim sağlar. Erişim, NTFS klasör izinleri ve SMB paylaşım izinleriyle belirlenir.
 
-| Principal | NTFS permissions | SMB permissions |
+| Hesap veya grup | NTFS izni | SMB izni |
 |---|---|---|
 | `BUILTIN\Administrators` | Full Control | Full |
-| `NT AUTHORITY\SYSTEM` | Full Control | No separate share grant |
+| `NT AUTHORITY\SYSTEM` | Full Control | Ayrı paylaşım izni yok |
 | `CORP\GG_Engineering` | Modify | Change |
 
-## Permission layout
+## NTFS İzinleri ve Klasör Hiyerarşisi
 
 ```text
 C:\CorpShares
@@ -22,11 +22,11 @@ C:\CorpShares
     GG_Engineering: Modify, explicit and inherited by children
 ```
 
-The parent establishes administrative access for department folders. Department folders retain inheritance and add their own security group. Broad Users permissions inherited from the drive root are excluded at `CorpShares`.
+`CorpShares`, departman klasörleri için yönetici ve SYSTEM izinlerini sağlar. Departman klasörleri bu izinleri devralır; her klasörde ilgili güvenlik grubunun erişim izni bulunur. `CorpShares`, disk kökündeki Users izinlerini devralmaz.
 
-## Share provisioning
+## Paylaşım Yapılandırması
 
-[New-DepartmentShare.ps1](../powershell/New-DepartmentShare.ps1) provisions the share using an existing security group. Execution requires elevated Windows PowerShell on DC01; the example is relative to the repository root:
+[New-DepartmentShare.ps1](../powershell/New-DepartmentShare.ps1), mevcut bir güvenlik grubu için klasör ve paylaşım izinlerini yapılandırır. Komut, DC01 üzerinde yönetici yetkili Windows PowerShell oturumunda çalıştırılır. Çalışma dizini repository köküdür.
 
 ```powershell
 .\powershell\New-DepartmentShare.ps1 `
@@ -35,13 +35,13 @@ The parent establishes administrative access for department folders. Department 
     -AccessGroup 'CORP\GG_Engineering'
 ```
 
-The script creates missing folders and publishes `\\DC01\Engineering`. Existing folders must have compatible permissions; conflicting ACLs or a share mapped to another path stop execution. Network operations must be allowed by both NTFS and SMB permissions.
+Script, eksik klasörleri oluşturur ve `\\DC01\Engineering` paylaşımını açar. Dosyalara ağ üzerinden erişim, hem NTFS hem SMB izinlerine bağlıdır.
 
-## Access validation
+## Erişim Testleri
 
-Access tests used separate CLIENT01 sign-in sessions for `CORP\ali` and `CORP\mehmet`, without alternate SMB credentials. Ali created, edited, saved, reopened, and deleted `ali-test.txt` through `\\DC01\Engineering`. Mehmet's access to the same path was denied.
+CLIENT01 üzerindeki erişim testleri, `CORP\ali` ve `CORP\mehmet` oturumlarını kullanır. Test dosyası `\\DC01\Engineering\ali-test.txt`'dir.
 
-| Account | Engineering group membership | Result |
+| Hesap | Engineering grup üyeliği | Sonuç |
 |---|---|---|
-| `CORP\ali` | Member | Create, edit, read, and delete succeeded |
-| `CORP\mehmet` | Not a member | Access denied |
+| `CORP\ali` | Üye | Dosya oluşturma, düzenleme, okuma ve silme başarılı |
+| `CORP\mehmet` | Üye değil | Erişim yok |

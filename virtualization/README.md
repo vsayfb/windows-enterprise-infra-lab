@@ -1,19 +1,19 @@
-# Virtual network
+# Sanal Ağ
 
-The Windows VMs are connected through `corp-lab`, an isolated libvirt network. Static addressing is used; DHCP, libvirt DNS, and external forwarding are disabled.
+Windows sanal makineleri, izole `corp-lab` libvirt ağına bağlıdır. IP adresleri statiktir; DHCP, libvirt DNS ve dış ağlara yönlendirme kapalıdır.
 
-| Setting | Value |
+| Ayar | Değer |
 |---|---|
-| Libvirt connection | `qemu:///system` |
-| Network | `corp-lab` |
+| Libvirt bağlantısı | `qemu:///system` |
+| Ağ | `corp-lab` |
 | Subnet | `10.10.10.0/24` |
 | Bridge | `virbr1` |
-| Host bridge address | `10.10.10.1/24` |
-| Autostart | Enabled |
+| Host bridge adresi | `10.10.10.1/24` |
+| Autostart | Etkin |
 
-## Network definition
+## Libvirt Ağının Oluşturulması
 
-Network definition commands, relative to the repository root:
+Komutların çalışma dizini repository köküdür.
 
 ```bash
 sudo virsh -c qemu:///system net-define virtualization/corp-lab.xml
@@ -21,7 +21,7 @@ sudo virsh -c qemu:///system net-start corp-lab
 sudo virsh -c qemu:///system net-autostart corp-lab
 ```
 
-## Network inspection
+## Ağ Durumu ve Bridge Adresi
 
 ```bash
 sudo virsh -c qemu:///system net-list --all

@@ -1,34 +1,32 @@
-# DC01 network configuration
+# DC01 Ağ Yapılandırması
 
-DC01 uses a static IPv4 address on the isolated `corp-lab` network. DNS is directed to DC01, which hosts the domain DNS service. No default gateway is configured.
+DC01, izole `corp-lab` ağında statik IPv4 adresi kullanır. Client'lar AD DS ve DNS hizmetlerine bu adres üzerinden erişir. DNS ayarı DC01'in kendisini gösterir; default gateway yoktur.
 
-| Setting | Value |
+| Ayar | Değer |
 |---|---|
-| Adapter alias | `Ethernet` |
-| IPv4 address | `10.10.10.10` |
-| Prefix length | `24` |
-| DNS server | `10.10.10.10` |
-| Default gateway | None |
+| Adaptör adı | `Ethernet` |
+| IPv4 adresi | `10.10.10.10` |
+| Prefix uzunluğu | `24` |
+| DNS sunucusu | `10.10.10.10` |
+| Default gateway | Yok |
 
-## Adapter identification
-
-Adapter and address information:
+## Ağ Adaptörü ve IP Bilgileri
 
 ```powershell
 Get-NetAdapter
 Get-NetIPConfiguration
 ```
 
-## IPv4 and DNS settings
+## IPv4 ve DNS Ayarları
 
-The configuration targets adapter alias `Ethernet` and requires elevated Windows PowerShell. Static addressing precedes AD DS promotion.
+Komutlar, `Ethernet` adaptörünü yapılandırır ve yönetici yetkili Windows PowerShell oturumunda çalıştırılır. Statik IP ayarı, AD DS kurulumu öncesinde yapılır.
 
 ```powershell
 New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress 10.10.10.10 -PrefixLength 24
 Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses 10.10.10.10
 ```
 
-## Network verification
+## IP Yapılandırması ve Host Bağlantısı
 
 ```powershell
 Get-NetIPAddress -InterfaceAlias "Ethernet" -AddressFamily IPv4
@@ -36,4 +34,4 @@ Get-NetIPConfiguration -InterfaceAlias "Ethernet"
 ping 10.10.10.1
 ```
 
-`10.10.10.1` is the Debian host's bridge address. DNS service is installed during [domain controller deployment](../active-directory/README.md).
+`10.10.10.1`, Debian host'un bridge adresidir. DNS rolü, [domain controller kurulumu](../active-directory/README.md) sırasında yüklenir.

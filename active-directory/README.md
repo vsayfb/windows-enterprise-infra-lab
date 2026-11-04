@@ -1,25 +1,25 @@
-# Domain controller deployment
+# Domain Controller Kurulumu
 
-DC01 is the first domain controller in the `corp.test` forest. Active Directory Domain Services and DNS are hosted on the same server.
+DC01, `corp.test` forest'ının ilk domain controller'ıdır. AD DS ve DNS aynı sunucuda çalışır.
 
-| Setting | Value |
+| Ayar | Değer |
 |---|---|
 | Domain controller | `DC01` |
 | Forest root domain | `corp.test` |
-| NetBIOS domain name | `CORP` |
-| IPv4 address | `10.10.10.10` |
+| NetBIOS domain adı | `CORP` |
+| IPv4 adresi | `10.10.10.10` |
 
-Promotion requires the [DC01 hostname](../virtualization/dc01.md) and [static IP configuration](../windows-networking/README.md).
+[DC01](../virtualization/dc01.md), [statik IP ve DNS yapılandırmasıyla](../windows-networking/README.md) çalışır.
 
-## AD DS installation
+## AD DS Kurulumu
 
-AD DS installation requires elevated Windows PowerShell.
+Komut, yönetici yetkili Windows PowerShell oturumunda çalıştırılır.
 
 ```powershell
 Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
 ```
 
-## Forest creation
+## Forest Kurulumu
 
 ```powershell
 Install-ADDSForest `
@@ -28,33 +28,33 @@ Install-ADDSForest `
     -InstallDns
 ```
 
-Forest promotion prompts for a DSRM recovery password, installs DNS, and restarts the server. The domain administrator account is `CORP\Administrator`.
+`Install-ADDSForest`, DSRM kurtarma parolasını ister, DNS rolünü kurar ve sunucuyu yeniden başlatır. Domain yönetici hesabı `CORP\Administrator`'dır.
 
-## DNS discovery
+## DNS Üzerinden Domain Controller Sorgusu
 
 ```powershell
 Resolve-DnsName -Name "_ldap._tcp.dc._msdcs.corp.test" -Type SRV
 ```
 
-The LDAP service record identifies `dc01.corp.test`; the corresponding IPv4 address is `10.10.10.10`.
+LDAP SRV kaydı `dc01.corp.test` adresini gösterir. Sunucunun IPv4 adresi `10.10.10.10`'dur.
 
-## Domain controller diagnostics
+## AD DS ve SYSVOL Kontrolleri
 
 ```powershell
 dcdiag /test:Advertising /test:SysVolCheck /test:NetLogons
 ```
 
-| Test | Scope |
+| Test | Kapsam |
 |---|---|
-| Connectivity | Preliminary DNS and directory connectivity checks |
-| Advertising | Domain controller service advertisement |
-| SysVolCheck | SYSVOL readiness |
-| NetLogons | Access to SYSVOL and NETLOGON shares |
+| Connectivity | DNS ve Active Directory bağlantısı |
+| Advertising | Sunucunun domain controller olarak hizmet vermesi |
+| SysVolCheck | SYSVOL durumu |
+| NetLogons | SYSVOL ve NETLOGON paylaşımlarına erişim |
 
-## Accounts and groups
+## Kullanıcılar ve Gruplar
 
-- [Engineering accounts and security group](engineering.md)
+- [Engineering kullanıcıları ve güvenlik grubu](engineering.md)
 
-## Computer accounts
+## Bilgisayar Hesapları
 
-- [PCs OU and computer placement](computer-organization.md)
+- [PCs organizasyon birimi ve bilgisayar hesapları](computer-organization.md)

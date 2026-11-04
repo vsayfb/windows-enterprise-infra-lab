@@ -1,18 +1,18 @@
-# System State backup and file recovery
+# System State Yedeği ve Dosya Kurtarma
 
-DC01 uses Windows Server Backup to store System State on a separate 30 GiB virtual disk, formatted as NTFS and mounted at `E:` with label `LabBackup`. The backup catalog includes AD (NTDS), SYSVOL, and Registry components.
+DC01, System State yedeğini Windows Server Backup ile ayrı bir 30 GiB sanal diskte tutar. Disk NTFS formatındadır; sürücü harfi `E:`, etiketi `LabBackup`'tır. Yedek kataloğu AD (NTDS), SYSVOL ve Registry bileşenlerini içerir.
 
-## Backup creation
+## System State Yedekleme
 
-Backup execution requires elevated Windows PowerShell on DC01. The command is relative to the repository root:
+Komut, DC01 üzerinde yönetici yetkili Windows PowerShell oturumunda çalıştırılır. Çalışma dizini repository köküdür.
 
 ```powershell
 .\powershell\Backup-SystemState.ps1 -BackupTarget 'E:'
 ```
 
-The script installs Windows Server Backup if needed, checks the target volume, starts the backup with an interactive confirmation, and lists catalog versions. It does not initialize or format disks.
+Script, gerektiğinde Windows Server Backup bileşenini kurar, hedef diski kontrol eder ve onay sonrasında yedeklemeyi başlatır. İşlem sonunda yedek sürümlerini listeler.
 
-## Backup catalog
+## Yedek Kataloğu
 
 ```powershell
 wbadmin get versions -backupTarget:E:
@@ -20,9 +20,9 @@ wbadmin get versions -backupTarget:E:
 wbadmin get items -version:11/03/2026-16:11 -backupTarget:E:
 ```
 
-Recovery identifies a backup by its catalog version. The recorded test used `11/03/2026-16:11`.
+Kurtarma için kullanılan yedek sürümü `11/03/2026-16:11`'dir.
 
-## Alternate-location file recovery
+## Farklı Konuma Dosya Kurtarma
 
 ```powershell
 .\powershell\Restore-BackupFiles.ps1 `
@@ -33,9 +33,9 @@ Recovery identifies a backup by its catalog version. The recorded test used `11/
     -RecoveryTarget 'C:\RestoreTest'
 ```
 
-The recovery script requires a new or empty destination outside the source hierarchy and backup volume. It inspects the catalog, requests confirmation, and recovers files recursively. Nonempty destinations and destination paths containing junctions or symbolic links are rejected.
+Kurtarma hedefi, kaynak dizinin ve yedek diskin dışında, yeni veya boş bir dizindir. Script, kataloğu kontrol eder ve onay sonrasında alt dizinlerle birlikte dosyaları kurtarır.
 
-Restored file listing and count:
+Kurtarılan dosyaların listesi ve sayısı:
 
 ```powershell
 Get-ChildItem 'C:\RestoreTest' -Recurse -File |
@@ -44,19 +44,18 @@ Get-ChildItem 'C:\RestoreTest' -Recurse -File |
 (Get-ChildItem 'C:\RestoreTest' -Recurse -File | Measure-Object).Count
 ```
 
-## Validation
+## Test Sonuçları
 
-| Check | Result |
+| Test | Sonuç |
 |---|---|
-| System State backup to E: | Completed successfully |
-| Catalog inspection | AD, SYSVOL, and Registry components listed |
-| Policy folder recovery to C:\RestoreTest | 29 files recovered, zero failures |
-| Restored file count on disk | 29 confirmed |
+| E: üzerinde System State yedeği | Başarılı |
+| Katalog içeriği | AD, SYSVOL ve Registry bileşenleri mevcut |
+| C:\RestoreTest konumuna policy dosyası kurtarma | Başarılı; 29 dosya |
 
-The test recovered files to an alternate directory. A full System State restore, AD database recovery, and complete domain controller recovery were not tested.
+## Yedek Depolama
 
-## Storage boundary
+Yedek diski ve VM diski aynı fiziksel makinededir.
 
-Separate virtual disks do not establish independent physical storage. If the VM disk and backup disk reside on the same host drive, failure of that drive can destroy both. This lab does not demonstrate off-site, offline, or immutable backup protection.
+Ayrı bir fiziksel cihazda, farklı bir lokasyonda veya çevrimdışı tutulan yedekler veri kaybına karşı korumayı artırır; bu projede tüm sistem aynı bilgisayarda çalışır.
 
-References: [System State backup](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/wbadmin-start-systemstatebackup), [file recovery](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/wbadmin-start-recovery).
+Kaynaklar: [System State yedekleme](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/wbadmin-start-systemstatebackup), [dosya kurtarma](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/wbadmin-start-recovery).

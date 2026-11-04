@@ -1,15 +1,15 @@
-# Computer account organization
+# Bilgisayar Hesaplarının OU Yapısı
 
-The `PCs` OU contains workstation computer accounts and provides a target for computer-specific Group Policy links. The built-in `Computers` container accepts computer accounts but does not support direct GPO links; domain-linked policies can still apply to its contents.
+PCs organizasyon birimi (OU), client bilgisayar hesaplarını içerir. Bilgisayarlara yönelik GPO'lar bu OU'ya bağlanır. Varsayılan `Computers` container'ına doğrudan GPO bağlanamaz; domain'e bağlı GPO'lar buradaki bilgisayarlara da uygulanabilir.
 
-| Computer | Directory location |
+| Bilgisayar | Active Directory yolu |
 |---|---|
 | CLIENT01 | `CN=CLIENT01,OU=PCs,DC=corp,DC=test` |
 | DC01 | `CN=DC01,OU=Domain Controllers,DC=corp,DC=test` |
 
-## PCs OU definition
+## PCs Organizasyon Birimi
 
-OU administration is performed on DC01 in elevated Windows PowerShell.
+Komutlar, DC01 üzerinde yönetici yetkili Windows PowerShell oturumunda çalıştırılır.
 
 ```powershell
 New-ADOrganizationalUnit `
@@ -18,7 +18,9 @@ New-ADOrganizationalUnit `
     -ProtectedFromAccidentalDeletion $true
 ```
 
-## CLIENT01 placement
+## CLIENT01 Hesabının PCs OU'ya Taşınması
+
+CLIENT01'in PCs organizasyon biriminde bulunması, WinRM ayarlarının `PCs-WinRM` GPO'suyla merkezi olarak yönetilmesini sağlar.
 
 ```powershell
 $Client = Get-ADComputer -Identity 'CLIENT01'
@@ -28,11 +30,9 @@ Move-ADObject `
     -TargetPath 'OU=PCs,DC=corp,DC=test'
 ```
 
-## Directory verification
+## Bilgisayar Hesaplarının OU Bilgileri
 
 ```powershell
 Get-ADComputer -Filter * |
     Select-Object Name, DistinguishedName
 ```
-
-Verified directory locations are listed in the table above.

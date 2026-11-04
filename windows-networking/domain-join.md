@@ -1,25 +1,25 @@
-# Client networking and domain join
+# Client Ağ Yapılandırması ve Domain Üyeliği
 
-CLIENT01 uses DC01 for DNS and domain controller discovery. Domain membership establishes the computer account in `corp.test`; users authenticate with their own domain accounts.
+CLIENT01, DNS sorguları ve domain controller bağlantısı için DC01'i kullanır. Bilgisayar hesabı `corp.test` domain'ine üyedir. Kullanıcılar kendi domain hesaplarıyla oturum açar.
 
-| Setting | Value |
+| Ayar | Değer |
 |---|---|
-| Hostname | `CLIENT01` |
-| IPv4 address | `10.10.10.20/24` |
-| DNS server | `10.10.10.10` |
-| Default gateway | None |
+| Bilgisayar adı | `CLIENT01` |
+| IPv4 adresi | `10.10.10.20/24` |
+| DNS sunucusu | `10.10.10.10` |
+| Default gateway | Yok |
 | Domain | `corp.test` |
-| Test user | `CORP\ali` |
+| Test kullanıcısı | `CORP\ali` |
 
-## IPv4 and DNS settings
+## IPv4 ve DNS Ayarları
 
-CLIENT01 network configuration requires elevated Windows PowerShell. Adapter indexes are host-specific:
+Ağ yapılandırma komutları, yönetici yetkili Windows PowerShell oturumunda çalıştırılır.
 
 ```powershell
 Get-NetAdapter
 ```
 
-CLIENT01 used interface index `3`:
+CLIENT01 üzerindeki adaptörün index değeri `3`'tür.
 
 ```powershell
 New-NetIPAddress -InterfaceIndex 3 `
@@ -29,7 +29,7 @@ Set-DnsClientServerAddress -InterfaceIndex 3 `
     -ServerAddresses '10.10.10.10'
 ```
 
-## Domain controller discovery
+## Domain Controller ve LDAP SRV Kaydı
 
 ```powershell
 Get-NetIPConfiguration -InterfaceIndex 3
@@ -39,19 +39,19 @@ ping 10.10.10.10
 nltest /dsgetdc:corp.test /force
 ```
 
-`nltest` requests fresh domain controller discovery and reports the selected DC, its address, domain, forest, and site. In this lab the DC is `DC01.corp.test` at `10.10.10.10`.
+`nltest`, domain controller bilgisini yeniden sorgular; sunucu adı, IP adresi, domain, forest ve site bilgilerini döndürür. Bu ağda domain controller `DC01.corp.test`, IP adresi `10.10.10.10`'dur.
 
-LDAP service discovery record:
+LDAP SRV kaydı:
 
 ```powershell
 Resolve-DnsName -Name '_ldap._tcp.dc._msdcs.corp.test' -Type SRV
 ```
 
-The SRV record identifies `dc01.corp.test` on port `389`. Its A record supplies `10.10.10.10`.
+SRV kaydı, `dc01.corp.test` ve `389` portunu gösterir. A kaydındaki IP adresi `10.10.10.10`'dur.
 
-## Domain join
+## Client'ın Domain'e Eklenmesi
 
-Domain join requires local elevation and credentials authorized to create or reuse the computer account:
+Komut, yerel yönetici yetkisi ve domain'de bilgisayar hesabı oluşturma veya mevcut hesabı kullanma yetkisi gerektirir.
 
 ```powershell
 Add-Computer -DomainName 'corp.test' `
@@ -59,11 +59,11 @@ Add-Computer -DomainName 'corp.test' `
     -Restart
 ```
 
-The recorded join used `CORP\Administrator`. Delegated computer-join accounts can provide the required domain permissions.
+Domain üyeliği komutu `CORP\Administrator` hesabını kullanır.
 
-## Domain sign-in verification
+## Kullanıcı Kimliği ve Domain Üyeliği
 
-Ali's first domain sign-in completed the required password change. Identity, group token, and membership were checked in the non-elevated user session:
+Ali'nin ilk domain oturumunda parola değişikliği zorunludur. Kullanıcı kimliği, grup üyeliği ve bilgisayarın domain bilgisi için sorgular standart kullanıcı oturumunda çalıştırılır.
 
 ```powershell
 whoami
@@ -74,19 +74,19 @@ Get-CimInstance Win32_ComputerSystem |
     Select-Object Name, Domain, PartOfDomain
 ```
 
-| Check | Verified value |
+| Kontrol | Değer |
 |---|---|
-| User identity | `corp\ali` |
-| Enabled group in logon token | `CORP\GG_Engineering` |
-| Computer name | `CLIENT01` |
+| Kullanıcı kimliği | `corp\ali` |
+| Oturum token'ındaki etkin grup | `CORP\GG_Engineering` |
+| Bilgisayar adı | `CLIENT01` |
 | Domain | `corp.test` |
 | PartOfDomain | `True` |
 
-Post-join placement: [computer account organization](../active-directory/computer-organization.md).
+[Bilgisayar hesabının bulunduğu OU](../active-directory/computer-organization.md)
 
-## Client provisioning automation
+## Script ile Client Yapılandırması
 
-[Join-DomainComputer.ps1](../powershell/Join-DomainComputer.ps1) automates hostname, address, DNS, and domain membership configuration. Execution requires elevated Windows PowerShell on the target computer:
+[Join-DomainComputer.ps1](../powershell/Join-DomainComputer.ps1), bilgisayar adı, IP adresi, DNS ve domain üyeliğini yapılandırır. Hedef bilgisayarda yönetici yetkili Windows PowerShell oturumu gereklidir.
 
 ```powershell
 .\powershell\Join-DomainComputer.ps1 `
@@ -98,6 +98,6 @@ Post-join placement: [computer account organization](../active-directory/compute
     -InterfaceName 'Ethernet'
 ```
 
-Deployment requires an available hostname and IP address. Re-execution after each restart advances the remaining stages. For existing members, the script performs DC discovery and secure-channel verification. User-session authentication and token checks are separate from machine membership.
+Script, yeniden başlatma sonrasında tekrar çalıştırıldığında kalan aşamaları tamamlar. Domain'e zaten üye bilgisayarlarda domain controller bağlantısını ve secure channel durumunu kontrol eder.
 
-References: [Add-Computer](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/add-computer?view=powershell-5.1), [domain controller discovery](https://learn.microsoft.com/en-us/troubleshoot/windows-client/networking/domain-joined-machines-cannot-detect-domain-profile).
+Kaynaklar: [Add-Computer](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/add-computer?view=powershell-5.1), [domain controller sorgusu](https://learn.microsoft.com/en-us/troubleshoot/windows-client/networking/domain-joined-machines-cannot-detect-domain-profile).

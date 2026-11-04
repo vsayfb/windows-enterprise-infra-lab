@@ -1,10 +1,10 @@
-# Domain user report
+# Domain Kullanıcı Raporu
 
-[Get-DomainUserReport.ps1](../powershell/Get-DomainUserReport.ps1) queries Active Directory and returns user account objects for display or CSV export. Execution requires Windows PowerShell, the ActiveDirectory module, and directory read permissions. Queries are sent to AD rather than individual computers.
+[Get-DomainUserReport.ps1](../powershell/Get-DomainUserReport.ps1), Active Directory kullanıcı hesaplarını sorgular. Sonuçlar ekranda görüntülenir veya CSV'ye aktarılır. Windows PowerShell, ActiveDirectory modülü ve dizin okuma yetkisi gereklidir.
 
-## User selection
+## Kullanıcı Raporu ve Filtreler
 
-Examples, relative to the repository root:
+Komutların çalışma dizini repository köküdür.
 
 ```powershell
 .\powershell\Get-DomainUserReport.ps1
@@ -16,21 +16,19 @@ Examples, relative to the repository root:
 .\powershell\Get-DomainUserReport.ps1 -AccountName 'meh*'
 ```
 
-| Parameter | Purpose |
+| Parametre | İşlev |
 |---|---|
-| `DomainName` | Domain to query; defaults to the current domain |
-| `Enabled` | `$true` for enabled accounts; `$false` for disabled accounts; omitted for both |
-| `OUName` | OU name, searched with its descendants; must resolve to exactly one OU |
-| `Department` | Exact match against the user's Department profile field |
-| `AccountName` | SAM account name pattern; supports wildcards |
-| `SearchBase` | Exact parent distinguished name, including descendants; alternative to `OUName` |
-| `Filter` | Advanced `Get-ADUser` filter; defaults to all users |
+| `DomainName` | Sorgulanacak domain; varsayılan değer mevcut domain |
+| `Enabled` | Etkin hesaplar için `$true`, devre dışı hesaplar için `$false`; parametresiz kullanımda tümü |
+| `OUName` | Alt OU'larla birlikte sorgulanacak OU adı; tek bir OU ile eşleşmelidir |
+| `Department` | Kullanıcının Department alanıyla tam eşleşme |
+| `AccountName` | SAM hesap adı filtresi; wildcard desteği |
+| `SearchBase` | Alt nesneleriyle birlikte sorgulanacak distinguished name; `OUName` alternatifi |
+| `Filter` | Gelişmiş `Get-ADUser` filtresi; varsayılan değer tüm kullanıcılar |
 
-Filters are combined with AND. `OUName` selects directory location; `Department` matches the profile attribute. Ali's Department value is `Engineering`.
+Rapor; hesap adı, hesap durumu, Department, UPN, distinguished name, parola değişiklik zamanı ve `LastLogonDate` bilgilerini içerir.
 
-The output includes account name, enabled status, Department, UPN, distinguished name, password modification time, and `LastLogonDate`. The last-logon value is replicated and approximate; it is not an exact authentication audit.
-
-## CSV export
+## Kullanıcı Raporunu CSV'ye Aktarma
 
 ```powershell
 .\powershell\Get-DomainUserReport.ps1 |
@@ -40,14 +38,12 @@ Import-Csv "$env:TEMP\users.csv" |
     Format-Table Name, SamAccountName, Department, Enabled
 ```
 
-`Export-Csv` consumes report objects directly. `Format-Table` produces display data rather than exportable report records. `-NoClobber` prevents replacing an existing file.
+## Test Sonuçları
 
-## Validation
-
-| Test | Result |
+| Test | Sonuç |
 |---|---|
-| Current-domain query | Administrator, Ali, Guest, krbtgt, and Mehmet returned |
-| Enabled users in Engineering OU | Ali only |
-| Disabled users | Guest and krbtgt |
-| Department set to Engineering | Ali only |
-| CSV export and reimport | Account status and Department values retained |
+| Mevcut domain sorgusu | Administrator, Ali, Guest, krbtgt ve Mehmet |
+| Engineering OU içindeki etkin kullanıcılar | Yalnızca Ali |
+| Devre dışı kullanıcılar | Guest ve krbtgt |
+| Department değeri Engineering olan kullanıcılar | Yalnızca Ali |
+| CSV dışa aktarma ve içe aktarma | Hesap durumu ve Department bilgileri korunuyor |
