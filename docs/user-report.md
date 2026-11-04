@@ -1,6 +1,6 @@
 # Domain user report
 
-[Get-DomainUserReport.ps1](../powershell/Get-DomainUserReport.ps1) queries Active Directory and returns user account objects for display or CSV export. Execution requires Windows PowerShell, the ActiveDirectory module, and directory read permissions. Queries are sent to AD rather than individual computers.
+[Get-DomainUserReport.ps1](../powershell/Get-DomainUserReport.ps1) queries Active Directory and returns user account objects for display or CSV export. Execution requires Windows PowerShell, the ActiveDirectory module, and directory read permissions.
 
 ## User selection
 
@@ -26,9 +26,7 @@ Examples, relative to the repository root:
 | `SearchBase` | Exact parent distinguished name, including descendants; alternative to `OUName` |
 | `Filter` | Advanced `Get-ADUser` filter; defaults to all users |
 
-Filters are combined with AND. `OUName` selects directory location; `Department` matches the profile attribute. Ali's Department value is `Engineering`.
-
-The output includes account name, enabled status, Department, UPN, distinguished name, password modification time, and `LastLogonDate`. The last-logon value is replicated and approximate; it is not an exact authentication audit.
+The output includes account name, enabled status, Department, UPN, distinguished name, password modification time, and `LastLogonDate`.
 
 ## CSV export
 
@@ -39,8 +37,6 @@ The output includes account name, enabled status, Department, UPN, distinguished
 Import-Csv "$env:TEMP\users.csv" |
     Format-Table Name, SamAccountName, Department, Enabled
 ```
-
-`Export-Csv` consumes report objects directly. `Format-Table` produces display data rather than exportable report records. `-NoClobber` prevents replacing an existing file.
 
 ## Validation
 

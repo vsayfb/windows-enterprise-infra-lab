@@ -18,7 +18,7 @@ $Inventory | Format-Table ComputerName, OS, RAM_GB, Status, Error
 | `Filter` | `Get-ADComputer` filter; defaults to `Enabled -eq $true` |
 | `SearchBase` | Parent distinguished name for an OU or container search, including descendants |
 
-Each record contains `ComputerName`, `DNSHostName`, `Domain`, `OS`, `RAM_GB`, `LogicalCPUs`, `LastBoot`, `Status`, and `Error`. A failed connection produces a failed record without stopping collection from other computers.
+Each record contains `ComputerName`, `DNSHostName`, `Domain`, `OS`, `RAM_GB`, `LogicalCPUs`, `LastBoot`, `Status`, and `Error`.
 
 ## Computer selection
 
@@ -29,8 +29,6 @@ $DomainControllers = .\powershell\Get-DomainInventory.ps1 `
     -SearchBase 'OU=Domain Controllers,DC=corp,DC=test'
 ```
 
-`SearchBase` restricts discovery to computer accounts in the specified directory subtree.
-
 ## CSV export
 
 ```powershell
@@ -40,8 +38,6 @@ $Inventory |
 Import-Csv "$env:TEMP\inventory.csv" |
     Format-Table ComputerName, OS, RAM_GB, Status
 ```
-
-`-Overwrite` permits replacement of an existing CSV. The exporter accepts inventory objects; `Format-Table` produces display data unsuitable for export. CSV fields are imported as strings.
 
 ## Validation
 
