@@ -17,6 +17,7 @@ Windows infrastructure lab on Debian with QEMU/KVM and libvirt.
 
 - [Domain controller deployment](active-directory/README.md)
 - [Engineering accounts and security group](active-directory/engineering.md)
+- [Computer account organization](active-directory/computer-organization.md)
 
 ## Group Policy
 

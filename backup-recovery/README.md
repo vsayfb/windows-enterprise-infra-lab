@@ -2,9 +2,9 @@
 
 DC01 uses Windows Server Backup to store System State on a separate 30 GiB virtual disk, formatted as NTFS and mounted at `E:` with label `LabBackup`. The backup catalog includes AD (NTDS), SYSVOL, and Registry components.
 
-## Create the backup
+## Backup creation
 
-Run from the repository root in elevated Windows PowerShell on DC01:
+Backup execution requires elevated Windows PowerShell on DC01. The command is relative to the repository root:
 
 ```powershell
 .\powershell\Backup-SystemState.ps1 -BackupTarget 'E:'
@@ -12,13 +12,7 @@ Run from the repository root in elevated Windows PowerShell on DC01:
 
 The script installs Windows Server Backup if needed, checks the target volume, starts the backup with an interactive confirmation, and lists catalog versions. It does not initialize or format disks.
 
-The underlying backup command is:
-
-```powershell
-wbadmin start systemstatebackup -backupTarget:E:
-```
-
-## Inspect the catalog
+## Backup catalog
 
 ```powershell
 wbadmin get versions -backupTarget:E:
@@ -26,9 +20,9 @@ wbadmin get versions -backupTarget:E:
 wbadmin get items -version:11/03/2026-16:11 -backupTarget:E:
 ```
 
-Use the exact version identifier from the local catalog. `11/03/2026-16:11` identifies the backup used in the recovery test.
+Recovery identifies a backup by its catalog version. The recorded test used `11/03/2026-16:11`.
 
-## Recover policy files to a separate folder
+## Alternate-location file recovery
 
 ```powershell
 .\powershell\Restore-BackupFiles.ps1 `
@@ -39,9 +33,9 @@ Use the exact version identifier from the local catalog. `11/03/2026-16:11` iden
     -RecoveryTarget 'C:\RestoreTest'
 ```
 
-Select a new or empty destination for each run. The script inspects the catalog, requests confirmation, and performs recursive file recovery. The destination must be outside the source hierarchy and backup volume. Existing nonempty destinations and destination paths containing junctions or symbolic links are rejected.
+The recovery script requires a new or empty destination outside the source hierarchy and backup volume. It inspects the catalog, requests confirmation, and recovers files recursively. Nonempty destinations and destination paths containing junctions or symbolic links are rejected.
 
-Inspect recovered files:
+Restored file listing and count:
 
 ```powershell
 Get-ChildItem 'C:\RestoreTest' -Recurse -File |

@@ -2,9 +2,9 @@
 
 [Get-DomainInventory.ps1](../powershell/Get-DomainInventory.ps1) discovers AD computer accounts and collects live system information over WinRM. [Export-InventoryCsv.ps1](../powershell/Export-InventoryCsv.ps1) writes the returned objects to CSV.
 
-Run from the repository root on DC01 in an administrative Windows PowerShell session. The ActiveDirectory module is required for discovery. WinRM must be enabled on the targets, and the executing account must have remote session access.
+Execution requires the ActiveDirectory module and authorized WinRM access to each target. Examples use an administrative Windows PowerShell session on DC01 with the repository root as the working directory.
 
-## Collect inventory
+## Inventory collection
 
 ```powershell
 $Inventory = .\powershell\Get-DomainInventory.ps1
@@ -20,7 +20,7 @@ $Inventory | Format-Table ComputerName, OS, RAM_GB, Status, Error
 
 Each record contains `ComputerName`, `DNSHostName`, `Domain`, `OS`, `RAM_GB`, `LogicalCPUs`, `LastBoot`, `Status`, and `Error`. A failed connection produces a failed record without stopping collection from other computers.
 
-## Filter computers
+## Computer selection
 
 ```powershell
 $Clients = .\powershell\Get-DomainInventory.ps1 -Filter "Name -like 'CLIENT*'"
@@ -29,9 +29,9 @@ $DomainControllers = .\powershell\Get-DomainInventory.ps1 `
     -SearchBase 'OU=Domain Controllers,DC=corp,DC=test'
 ```
 
-OU searches select computer accounts stored within that OU hierarchy. A user's OU location does not determine the location of their computer account.
+`SearchBase` restricts discovery to computer accounts in the specified directory subtree.
 
-## Export and inspect CSV
+## CSV export
 
 ```powershell
 $Inventory |
@@ -41,7 +41,7 @@ Import-Csv "$env:TEMP\inventory.csv" |
     Format-Table ComputerName, OS, RAM_GB, Status
 ```
 
-Use `-Overwrite` to replace an existing CSV. Pipe inventory objects directly to the exporter; use `Format-Table` only for display. CSV fields are imported as strings.
+`-Overwrite` permits replacement of an existing CSV. The exporter accepts inventory objects; `Format-Table` produces display data unsuitable for export. CSV fields are imported as strings.
 
 ## Validation
 

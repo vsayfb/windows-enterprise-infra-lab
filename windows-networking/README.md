@@ -10,25 +10,25 @@ DC01 uses a static IPv4 address on the isolated `corp-lab` network. DNS is direc
 | DNS server | `10.10.10.10` |
 | Default gateway | None |
 
-## Identify the adapter
+## Adapter identification
 
-Run PowerShell as Administrator:
+Adapter and address information:
 
 ```powershell
 Get-NetAdapter
 Get-NetIPConfiguration
 ```
 
-## Configure IPv4 and DNS
+## IPv4 and DNS settings
 
-Run on the newly installed server before configuring Active Directory. Replace `Ethernet` if the adapter alias differs.
+The configuration targets adapter alias `Ethernet` and requires elevated Windows PowerShell. Static addressing precedes AD DS promotion.
 
 ```powershell
 New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress 10.10.10.10 -PrefixLength 24
 Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses 10.10.10.10
 ```
 
-## Verify the configuration
+## Network verification
 
 ```powershell
 Get-NetIPAddress -InterfaceAlias "Ethernet" -AddressFamily IPv4

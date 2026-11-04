@@ -11,15 +11,15 @@ CLIENT01 uses DC01 for DNS and domain controller discovery. Domain membership es
 | Domain | `corp.test` |
 | Test user | `CORP\ali` |
 
-## Configure IPv4 and DNS
+## IPv4 and DNS settings
 
-Run Windows PowerShell as Administrator on CLIENT01. Identify the interface index before configuring the adapter:
+CLIENT01 network configuration requires elevated Windows PowerShell. Adapter indexes are host-specific:
 
 ```powershell
 Get-NetAdapter
 ```
 
-For interface index `3`:
+CLIENT01 used interface index `3`:
 
 ```powershell
 New-NetIPAddress -InterfaceIndex 3 `
@@ -29,7 +29,7 @@ Set-DnsClientServerAddress -InterfaceIndex 3 `
     -ServerAddresses '10.10.10.10'
 ```
 
-## Discover the domain controller
+## Domain controller discovery
 
 ```powershell
 Get-NetIPConfiguration -InterfaceIndex 3
@@ -41,7 +41,7 @@ nltest /dsgetdc:corp.test /force
 
 `nltest` requests fresh domain controller discovery and reports the selected DC, its address, domain, forest, and site. In this lab the DC is `DC01.corp.test` at `10.10.10.10`.
 
-To inspect the underlying DNS service record:
+LDAP service discovery record:
 
 ```powershell
 Resolve-DnsName -Name '_ldap._tcp.dc._msdcs.corp.test' -Type SRV
@@ -49,9 +49,9 @@ Resolve-DnsName -Name '_ldap._tcp.dc._msdcs.corp.test' -Type SRV
 
 The SRV record identifies `dc01.corp.test` on port `389`. Its A record supplies `10.10.10.10`.
 
-## Join the domain
+## Domain join
 
-Run in an elevated Windows PowerShell session. Local elevation and authorized domain credentials are both required:
+Domain join requires local elevation and credentials authorized to create or reuse the computer account:
 
 ```powershell
 Add-Computer -DomainName 'corp.test' `
@@ -59,13 +59,11 @@ Add-Computer -DomainName 'corp.test' `
     -Restart
 ```
 
-The lab uses `CORP\Administrator`. For delegated administration, supply an account authorized to join computers to the domain.
+The recorded join used `CORP\Administrator`. Delegated computer-join accounts can provide the required domain permissions.
 
-## Verify domain sign-in
+## Domain sign-in verification
 
-After restarting, select **Other user** and sign in as `CORP\ali`. Change the temporary password when prompted.
-
-Run in Ali's normal, non-elevated PowerShell session:
+Ali's first domain sign-in completed the required password change. Identity, group token, and membership were checked in the non-elevated user session:
 
 ```powershell
 whoami
@@ -76,11 +74,19 @@ Get-CimInstance Win32_ComputerSystem |
     Select-Object Name, Domain, PartOfDomain
 ```
 
-The domain sign-in was verified as `corp\ali`, with `CORP\GG_Engineering` enabled in the logon token. The computer reported `Name: CLIENT01`, `Domain: corp.test`, and `PartOfDomain: True`.
+| Check | Verified value |
+|---|---|
+| User identity | `corp\ali` |
+| Enabled group in logon token | `CORP\GG_Engineering` |
+| Computer name | `CLIENT01` |
+| Domain | `corp.test` |
+| PartOfDomain | `True` |
 
-## Automate another client
+Post-join placement: [computer account organization](../active-directory/computer-organization.md).
 
-Run [Join-DomainComputer.ps1](../powershell/Join-DomainComputer.ps1) locally on the target computer in elevated Windows PowerShell:
+## Client provisioning automation
+
+[Join-DomainComputer.ps1](../powershell/Join-DomainComputer.ps1) automates hostname, address, DNS, and domain membership configuration. Execution requires elevated Windows PowerShell on the target computer:
 
 ```powershell
 .\powershell\Join-DomainComputer.ps1 `
@@ -92,6 +98,6 @@ Run [Join-DomainComputer.ps1](../powershell/Join-DomainComputer.ps1) locally on 
     -InterfaceName 'Ethernet'
 ```
 
-Use an unused hostname and address. Run the same command after each restart. After joining, the script performs DC discovery and tests the computer's secure channel without attempting another join. Verify the intended user's sign-in and group token separately in that user's session.
+Deployment requires an available hostname and IP address. Re-execution after each restart advances the remaining stages. For existing members, the script performs DC discovery and secure-channel verification. User-session authentication and token checks are separate from machine membership.
 
 References: [Add-Computer](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/add-computer?view=powershell-5.1), [domain controller discovery](https://learn.microsoft.com/en-us/troubleshoot/windows-client/networking/domain-joined-machines-cannot-detect-domain-profile).

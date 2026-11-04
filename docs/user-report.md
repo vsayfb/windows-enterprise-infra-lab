@@ -1,10 +1,10 @@
 # Domain user report
 
-[Get-DomainUserReport.ps1](../powershell/Get-DomainUserReport.ps1) queries Active Directory and returns user account objects for display or CSV export. Run in Windows PowerShell with the ActiveDirectory module and directory read permissions. WinRM is not required.
+[Get-DomainUserReport.ps1](../powershell/Get-DomainUserReport.ps1) queries Active Directory and returns user account objects for display or CSV export. Execution requires Windows PowerShell, the ActiveDirectory module, and directory read permissions. Queries are sent to AD rather than individual computers.
 
-## Collect and filter users
+## User selection
 
-Run from the repository root:
+Examples, relative to the repository root:
 
 ```powershell
 .\powershell\Get-DomainUserReport.ps1
@@ -26,11 +26,11 @@ Run from the repository root:
 | `SearchBase` | Exact parent distinguished name, including descendants; alternative to `OUName` |
 | `Filter` | Advanced `Get-ADUser` filter; defaults to all users |
 
-Combined parameters narrow the results together. OU location and the Department profile field are independent: moving an account does not populate its Department field. Ali's Department is configured as `Engineering`.
+Filters are combined with AND. `OUName` selects directory location; `Department` matches the profile attribute. Ali's Department value is `Engineering`.
 
 The output includes account name, enabled status, Department, UPN, distinguished name, password modification time, and `LastLogonDate`. The last-logon value is replicated and approximate; it is not an exact authentication audit.
 
-## Export and inspect CSV
+## CSV export
 
 ```powershell
 .\powershell\Get-DomainUserReport.ps1 |
@@ -40,7 +40,7 @@ Import-Csv "$env:TEMP\users.csv" |
     Format-Table Name, SamAccountName, Department, Enabled
 ```
 
-Pipe report objects directly to `Export-Csv`. Use `Format-Table` only for display. `-NoClobber` prevents replacing an existing file.
+`Export-Csv` consumes report objects directly. `Format-Table` produces display data rather than exportable report records. `-NoClobber` prevents replacing an existing file.
 
 ## Validation
 

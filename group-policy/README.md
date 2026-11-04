@@ -2,9 +2,9 @@
 
 `Engineering-User-Policy` is linked to `OU=Engineering,DC=corp,DC=test`. User settings apply according to the user account's OU location and GPO filtering, rather than membership in `GG_Engineering`.
 
-## Create and link the GPO
+## GPO definition and link
 
-Run in elevated Windows PowerShell on DC01:
+GPO creation and linking commands, executed in elevated Windows PowerShell on DC01:
 
 ```powershell
 New-GPO -Name 'Engineering-User-Policy'
@@ -14,17 +14,20 @@ New-GPLink `
     -Target 'OU=Engineering,DC=corp,DC=test'
 ```
 
-## Configure the restriction
+## Policy configuration
 
-1. Open **Server Manager → Tools → Group Policy Management**.
-2. Expand **Forest: corp.test → Domains → corp.test → Group Policy Objects**.
-3. Right-click **Engineering-User-Policy** and select **Edit**.
-4. Open **User Configuration → Policies → Administrative Templates → Control Panel**.
-5. Set **Prohibit access to Control Panel and PC settings** to **Enabled**.
+Administrative Template configuration in `Engineering-User-Policy`:
 
-## Verify application
+| Property | Value |
+|---|---|
+| Policy path | User Configuration → Policies → Administrative Templates → Control Panel |
+| Setting | Prohibit access to Control Panel and PC settings |
+| Test state | Enabled |
+| Final state | Not Configured |
 
-On CLIENT01, sign in as `CORP\ali` and run in a normal PowerShell session:
+## Policy application
+
+User policy refresh and reporting were performed in Ali's non-elevated session on CLIENT01:
 
 ```powershell
 gpupdate /target:user /force
@@ -32,11 +35,11 @@ gpupdate /target:user /force
 gpresult /scope user /r
 ```
 
-Inspect **Applied Group Policy Objects** for `Engineering-User-Policy`. Attempt to open Settings and Control Panel.
+`Engineering-User-Policy` appeared under **Applied Group Policy Objects**. Settings and Control Panel access was blocked.
 
-## Revert the restriction
+## Final configuration
 
-Set the same policy to **Not Configured**, run `gpupdate /target:user /force` in Ali's session, and reopen Settings and Control Panel. The GPO and OU link remain in place.
+The setting was returned to **Not Configured**. After `gpupdate /target:user /force`, Settings and Control Panel opened successfully. The GPO and OU link remain configured.
 
 ## Validation
 

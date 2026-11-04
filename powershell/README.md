@@ -1,6 +1,6 @@
 # PowerShell scripts
 
-## Deploy DC01
+## Initial domain controller
 
 [Deploy-DC01-NewForest.ps1](Deploy-DC01-NewForest.ps1) configures the first domain controller with fixed lab settings:
 
@@ -14,21 +14,21 @@
 | Forest and domain | `corp.test` |
 | NetBIOS domain name | `CORP` |
 
-Run on a fresh Windows Server installation connected to `corp-lab`. Open Windows PowerShell as Administrator and run from this directory:
+Deployment requires a fresh Windows Server installation on `corp-lab` and elevated Windows PowerShell. Examples in this reference use `powershell/` as the working directory.
 
 ```powershell
 .\Deploy-DC01-NewForest.ps1
 ```
 
-Run the same file after each restart. Completed deployment stages are skipped. Enter and confirm the DSRM recovery password when prompted, then confirm forest creation. After promotion, sign in as `CORP\Administrator` and run the file again to check networking, DNS discovery, and domain controller services.
+The script advances through deployment stages across restarts. Completed stages are skipped on re-execution. Forest promotion prompts for a DSRM password and confirmation. After promotion, re-execution performs networking, DNS, and domain controller checks.
 
-Credentials are entered interactively and are not stored in the script. Existing conflicting IPv4 configurations and unrelated domain memberships are rejected.
+Password entry is interactive. Conflicting IPv4 configurations and unrelated domain memberships stop deployment.
 
-## Add a domain controller
+## Additional domain controllers
 
 [Add-DomainController.ps1](Add-DomainController.ps1) configures an additional writable domain controller and DNS server in an existing domain. The existing domain controller and its DNS service must be reachable. Use an unused hostname and IPv4 address on the isolated network.
 
-Run on the new Windows Server VM in elevated Windows PowerShell:
+Execution context: elevated Windows PowerShell on the new Windows Server VM.
 
 ```powershell
 .\Add-DomainController.ps1 `
@@ -49,17 +49,17 @@ Run on the new Windows Server VM in elevated Windows PowerShell:
 | `PrefixLength` | Subnet prefix length; default `24` |
 | `InterfaceName` | Local network adapter alias; default `Ethernet` |
 
-Run the same command after each restart. Supply an account authorized to add domain controllers and enter the new server's DSRM password when prompted. Confirm promotion and allow the server to restart. Sign in with a domain administrator account and run the same command to inspect DNS discovery, DC services, and inbound replication.
+Promotion prompts for authorized domain credentials and a DSRM password, then restarts the server. Re-execution with the same parameters advances the deployment and performs DNS, DC service, and inbound replication checks after promotion.
 
-The script does not configure a default gateway or replace conflicting static addresses. After promotion, the verification stage preserves the DC's DNS client configuration. Inspect `dcdiag` and `repadmin` output for test failures and replication errors.
+The script targets an isolated network without a default gateway. Conflicting static addresses stop deployment. The post-promotion stage preserves DNS client settings and reports `dcdiag` and `repadmin` results.
 
 Reference: [Install-ADDSDomainController](https://learn.microsoft.com/en-us/powershell/module/addsdeployment/install-addsdomaincontroller?view=windowsserver2025-ps).
 
-## Provision department users
+## Department account provisioning
 
 [New-ADDepartmentUser.ps1](New-ADDepartmentUser.ps1) creates a department OU, a global security group, and a user account with direct group membership.
 
-Run in Windows PowerShell with permissions to manage users, groups, and OUs in the selected domain:
+Provisioning requires Windows PowerShell and permissions to manage users, groups, and OUs in the selected domain.
 
 ```powershell
 .\New-ADDepartmentUser.ps1 `
@@ -79,7 +79,7 @@ Run in Windows PowerShell with permissions to manage users, groups, and OUs in t
 | `DisplayName` | User object name and display name |
 | `ParentPath` | Existing parent OU distinguished name; defaults to the domain root |
 
-Use a different OU, group, and account for another department:
+Sales department example:
 
 ```powershell
 .\New-ADDepartmentUser.ps1 `
@@ -90,15 +90,15 @@ Use a different OU, group, and account for another department:
     -DisplayName 'Ayse'
 ```
 
-To create a department beneath an existing OU, supply its distinguished name with `-ParentPath`, for example `-ParentPath 'OU=Departments,DC=corp,DC=test'`. The parent OU must already exist.
+`ParentPath` identifies an existing parent OU, such as `OU=Departments,DC=corp,DC=test`. The default parent is the domain root.
 
 OU names support letters, digits, spaces, underscores, and hyphens. Group names support letters, digits, underscores, and hyphens. New or disabled accounts require a temporary password entered at a secure prompt. Existing enabled accounts retain their passwords and password-change state. Existing objects with conflicting locations or group settings are rejected.
 
-See [Engineering accounts and security group](../active-directory/engineering.md) for the lab structure and verification commands.
+Directory structure and verification: [Engineering accounts and security group](../active-directory/engineering.md).
 
-## Join a computer to the domain
+## Computer domain join
 
-[Join-DomainComputer.ps1](Join-DomainComputer.ps1) configures a hostname, static IPv4 address, and domain DNS server, discovers a DC, and joins an existing domain. Run locally in elevated Windows PowerShell on a Windows edition that supports AD domain membership.
+[Join-DomainComputer.ps1](Join-DomainComputer.ps1) configures a hostname, static IPv4 address, and domain DNS server, discovers a DC, and joins an existing domain. Execution requires elevated Windows PowerShell on a Windows edition supporting AD domain membership.
 
 ```powershell
 .\Join-DomainComputer.ps1 `
@@ -119,17 +119,17 @@ See [Engineering accounts and security group](../active-directory/engineering.md
 | `PrefixLength` | Subnet prefix length; default `24` |
 | `InterfaceName` | Local adapter alias; default `Ethernet` |
 
-Run the same command after each restart. Enter credentials authorized to join computers when prompted. Credentials are not stored in the script.
+Re-execution with the same parameters advances deployment after restarts. Domain credentials are requested interactively at the join stage.
 
 The network configuration is intended for the isolated lab: no default gateway is configured, and conflicting static addresses are rejected. Computers in another domain and domain controllers are rejected. On a joined computer, the script preserves network settings, performs DC discovery, and tests the secure channel.
 
-See [client networking and domain join](../windows-networking/domain-join.md) for manual setup and user-session verification.
+Configuration and authentication results: [client networking and domain join](../windows-networking/domain-join.md).
 
-## Provision a department share
+## Department share provisioning
 
 [New-DepartmentShare.ps1](New-DepartmentShare.ps1) creates a protected parent folder and a department folder with inherited administrative permissions, then publishes an SMB share.
 
-Run locally in elevated Windows PowerShell on the file server:
+Execution context: elevated Windows PowerShell on the file server.
 
 ```powershell
 .\New-DepartmentShare.ps1 `
@@ -148,9 +148,9 @@ The script grants Administrators and SYSTEM inheritable NTFS Full Control at the
 
 Existing folders and shares are checked before configuration. Conflicting permissions, disabled inheritance on a department folder, or a share mapped to another path stop execution. Matching existing configuration can be reused. No files are deleted, and no credentials are stored.
 
-See [Engineering file share](../file-sharing/README.md) for the permission layout and client access tests.
+Permission layout and access results: [Engineering file share](../file-sharing/README.md).
 
-## Collect and export inventory
+## Computer inventory and CSV export
 
 [Get-DomainInventory.ps1](Get-DomainInventory.ps1) queries computer accounts in the current domain or a supplied domain, applies AD filters, and collects live inventory over WinRM. [Export-InventoryCsv.ps1](Export-InventoryCsv.ps1) exports those objects separately.
 
@@ -162,11 +162,11 @@ $Inventory | Format-Table ComputerName, OS, RAM_GB, Status, Error
 $Inventory | .\Export-InventoryCsv.ps1 -Path "$env:TEMP\inventory.csv"
 ```
 
-Use `-DomainName`, `-Filter`, and `-SearchBase` to select computers. Use `-Overwrite` on the exporter to replace an existing CSV. See [domain computer inventory](../docs/inventory.md) for parameters, filter examples, and validation results.
+`DomainName`, `Filter`, and `SearchBase` control computer selection. The exporter requires `-Overwrite` to replace an existing CSV. Parameters and validation: [domain computer inventory](../docs/inventory.md).
 
-## Report domain users
+## Domain user reporting
 
-[Get-DomainUserReport.ps1](Get-DomainUserReport.ps1) returns user account objects from Active Directory. Filter by enabled status, OU, Department, or account name:
+[Get-DomainUserReport.ps1](Get-DomainUserReport.ps1) returns user account objects from Active Directory with filters for enabled status, OU, Department, and account name:
 
 ```powershell
 .\Get-DomainUserReport.ps1 -Enabled $true -OUName 'Engineering'
@@ -174,11 +174,11 @@ Use `-DomainName`, `-Filter`, and `-SearchBase` to select computers. Use `-Overw
 .\Get-DomainUserReport.ps1 -Department 'Engineering'
 ```
 
-Use `Export-Csv` to save the output. See [domain user report](../docs/user-report.md) for all parameters, export commands, and validation results.
+The returned objects support `Export-Csv`. Parameters and validation: [domain user report](../docs/user-report.md).
 
-## Back up System State
+## System State backup
 
-[Backup-SystemState.ps1](Backup-SystemState.ps1) installs Windows Server Backup if needed and creates a System State backup on an existing local NTFS volume. Run in elevated Windows PowerShell:
+[Backup-SystemState.ps1](Backup-SystemState.ps1) installs Windows Server Backup if needed and creates a System State backup on an existing local NTFS volume. Execution requires elevated Windows PowerShell:
 
 ```powershell
 .\Backup-SystemState.ps1 -BackupTarget 'E:'
@@ -186,7 +186,7 @@ Use `Export-Csv` to save the output. See [domain user report](../docs/user-repor
 
 The script retains the backup confirmation prompt and lists catalog versions after completion. It does not partition or format the target disk.
 
-## Recover backup files
+## File recovery
 
 [Restore-BackupFiles.ps1](Restore-BackupFiles.ps1) restores a file or folder recursively to a separate directory:
 
@@ -199,6 +199,6 @@ The script retains the backup confirmation prompt and lists catalog versions aft
     -RecoveryTarget 'C:\RestoreTest'
 ```
 
-Supply the version identifier from `wbadmin get versions`. `MachineName` defaults to the current computer. The recovery destination must be new or empty and outside the source hierarchy and backup volume. Confirmation is interactive. The script displays recovered file paths and a count; it does not perform System State recovery.
+`Version` identifies a backup catalog entry from `wbadmin get versions`. `MachineName` defaults to the current computer. Recovery requires an empty or new destination outside the source hierarchy and backup volume. Confirmation is interactive; the output includes restored file paths and a count. Recovery scope is files and folders.
 
-See [System State backup and file recovery](../backup-recovery/README.md) for the catalog checks, test results, and storage limitations.
+Catalog checks, results, and storage scope: [System State backup and file recovery](../backup-recovery/README.md).

@@ -24,9 +24,9 @@ C:\CorpShares
 
 The parent establishes administrative access for department folders. Department folders retain inheritance and add their own security group. Broad Users permissions inherited from the drive root are excluded at `CorpShares`.
 
-## Configure the share
+## Share provisioning
 
-Run [New-DepartmentShare.ps1](../powershell/New-DepartmentShare.ps1) from the repository root in elevated Windows PowerShell on DC01. The security group must already exist:
+[New-DepartmentShare.ps1](../powershell/New-DepartmentShare.ps1) provisions the share using an existing security group. Execution requires elevated Windows PowerShell on DC01; the example is relative to the repository root:
 
 ```powershell
 .\powershell\New-DepartmentShare.ps1 `
@@ -37,11 +37,9 @@ Run [New-DepartmentShare.ps1](../powershell/New-DepartmentShare.ps1) from the re
 
 The script creates missing folders and publishes `\\DC01\Engineering`. Existing folders must have compatible permissions; conflicting ACLs or a share mapped to another path stop execution. Network operations must be allowed by both NTFS and SMB permissions.
 
-## Test user access
+## Access validation
 
-On CLIENT01, sign in as `CORP\ali` and open `\\DC01\Engineering`. Create `ali-test.txt`, edit and save it, close and reopen it, then delete it.
-
-Sign out and sign in as `CORP\mehmet`. Open the same UNC path. Do not supply alternate credentials if prompted.
+Access tests used separate CLIENT01 sign-in sessions for `CORP\ali` and `CORP\mehmet`, without alternate SMB credentials. Ali created, edited, saved, reopened, and deleted `ali-test.txt` through `\\DC01\Engineering`. Mehmet's access to the same path was denied.
 
 | Account | Engineering group membership | Result |
 |---|---|---|

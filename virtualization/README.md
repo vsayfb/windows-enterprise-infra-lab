@@ -11,9 +11,9 @@ The Windows VMs are connected through `corp-lab`, an isolated libvirt network. S
 | Host bridge address | `10.10.10.1/24` |
 | Autostart | Enabled |
 
-## Create the network
+## Network definition
 
-Run from the repository root:
+Network definition commands, relative to the repository root:
 
 ```bash
 sudo virsh -c qemu:///system net-define virtualization/corp-lab.xml
@@ -21,7 +21,7 @@ sudo virsh -c qemu:///system net-start corp-lab
 sudo virsh -c qemu:///system net-autostart corp-lab
 ```
 
-## Verify the network
+## Network inspection
 
 ```bash
 sudo virsh -c qemu:///system net-list --all

@@ -9,17 +9,17 @@ DC01 is the first domain controller in the `corp.test` forest. Active Directory 
 | NetBIOS domain name | `CORP` |
 | IPv4 address | `10.10.10.10` |
 
-Configure the [hostname](../virtualization/dc01.md) and [static IP address](../windows-networking/README.md) before promotion.
+Promotion requires the [DC01 hostname](../virtualization/dc01.md) and [static IP configuration](../windows-networking/README.md).
 
-## Install AD DS
+## AD DS installation
 
-Run PowerShell as Administrator:
+AD DS installation requires elevated Windows PowerShell.
 
 ```powershell
 Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
 ```
 
-## Create the forest
+## Forest creation
 
 ```powershell
 Install-ADDSForest `
@@ -28,17 +28,9 @@ Install-ADDSForest `
     -InstallDns
 ```
 
-Enter and confirm a Directory Services Restore Mode (DSRM) password at the prompt. Store the password securely outside the repository. Confirm promotion and allow the server to restart.
+Forest promotion prompts for a DSRM recovery password, installs DNS, and restarts the server. The domain administrator account is `CORP\Administrator`.
 
-Sign in as `CORP\Administrator` after restarting.
-
-## Inspect Active Directory and DNS
-
-Open **Server Manager → Tools → Active Directory Users and Computers**. Expand **corp.test → Domain Controllers** to locate `DC01`.
-
-Open **Server Manager → Tools → DNS**. Expand **DC01 → Forward Lookup Zones** to inspect the AD-integrated zones `corp.test` and `_msdcs.corp.test`.
-
-## Verify DNS discovery
+## DNS discovery
 
 ```powershell
 Resolve-DnsName -Name "_ldap._tcp.dc._msdcs.corp.test" -Type SRV
@@ -46,7 +38,7 @@ Resolve-DnsName -Name "_ldap._tcp.dc._msdcs.corp.test" -Type SRV
 
 The LDAP service record identifies `dc01.corp.test`; the corresponding IPv4 address is `10.10.10.10`.
 
-## Verify domain controller services
+## Domain controller diagnostics
 
 ```powershell
 dcdiag /test:Advertising /test:SysVolCheck /test:NetLogons
@@ -62,3 +54,7 @@ dcdiag /test:Advertising /test:SysVolCheck /test:NetLogons
 ## Accounts and groups
 
 - [Engineering accounts and security group](engineering.md)
+
+## Computer accounts
+
+- [PCs OU and computer placement](computer-organization.md)

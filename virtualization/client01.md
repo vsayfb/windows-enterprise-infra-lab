@@ -2,26 +2,28 @@
 
 CLIENT01 runs Windows 11 Enterprise Evaluation on QEMU/KVM. It is connected to the isolated `corp-lab` network and joined to `corp.test`.
 
-## Install Windows 11
+## Configuration
 
-1. Create a VM named `CLIENT01` in virt-manager using local installation media.
-2. Select the Windows 11 Enterprise Evaluation ISO.
-3. Connect the network adapter to `corp-lab`.
-4. Install Windows 11 and complete initial setup with a local administrator account.
+| Component | Configuration |
+|---|---|
+| VM name and guest hostname | `CLIENT01` |
+| Operating system | Windows 11 Enterprise Evaluation |
+| Network | `corp-lab` |
+| Domain | `corp.test` |
 
-## Set the hostname
+## Guest hostname
 
-The VM name and Windows hostname are configured separately. Open Windows PowerShell as Administrator:
+The guest hostname is set before domain join. `Rename-Computer` requires elevation and restarts Windows.
 
 ```powershell
 Rename-Computer -NewName 'CLIENT01' -Restart
 ```
 
-After restarting, sign in with the local account and inspect the hostname and network adapter:
+Hostname and adapter queries:
 
 ```powershell
 hostname
 Get-NetAdapter
 ```
 
-Continue with [client networking and domain join](../windows-networking/domain-join.md).
+Networking configuration: [client networking and domain join](../windows-networking/domain-join.md).

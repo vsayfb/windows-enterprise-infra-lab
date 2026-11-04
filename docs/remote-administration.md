@@ -2,9 +2,9 @@
 
 DC01 manages CLIENT01 through PowerShell remoting over WinRM using the domain administrator's identity. Remote commands execute independently of the desktop user's session.
 
-## Enable remoting
+## WinRM configuration
 
-On CLIENT01, open Windows PowerShell as Administrator and run:
+Local WinRM configuration requires elevated Windows PowerShell on CLIENT01:
 
 ```powershell
 Enable-PSRemoting -Force
@@ -12,9 +12,9 @@ Enable-PSRemoting -Force
 
 This configures the WinRM service, PowerShell session endpoints, and firewall rules.
 
-## Test connectivity and execution
+## Connection and identity verification
 
-Run from DC01 in an administrative PowerShell session:
+Connection and execution checks from an administrative PowerShell session on DC01:
 
 ```powershell
 Test-WSMan -ComputerName 'CLIENT01.corp.test'
@@ -28,7 +28,7 @@ Invoke-Command -ComputerName 'CLIENT01.corp.test' -ScriptBlock {
 
 The remote commands returned `CLIENT01` and `corp\administrator`.
 
-## Use an interactive session
+## Interactive sessions
 
 ```powershell
 Enter-PSSession -ComputerName 'CLIENT01'
@@ -42,9 +42,9 @@ Exit-PSSession
 
 Commands between `Enter-PSSession` and `Exit-PSSession` execute on CLIENT01.
 
-## Control a service remotely
+## Remote service control
 
-Run from DC01. Stopping Print Spooler temporarily disables printing on CLIENT01.
+The service-control test used Print Spooler on CLIENT01. Printing was unavailable while the service was stopped.
 
 ```powershell
 Invoke-Command -ComputerName 'CLIENT01' -ScriptBlock {
@@ -54,7 +54,7 @@ Invoke-Command -ComputerName 'CLIENT01' -ScriptBlock {
 }
 ```
 
-Restore the service:
+Service restoration:
 
 ```powershell
 Invoke-Command -ComputerName 'CLIENT01' -ScriptBlock {
@@ -66,7 +66,7 @@ Invoke-Command -ComputerName 'CLIENT01' -ScriptBlock {
 
 The service was verified as Running, Stopped, then Running again.
 
-## Inspect event logs
+## Event log query
 
 ```powershell
 Invoke-Command -ComputerName 'CLIENT01' -ScriptBlock {
@@ -78,4 +78,4 @@ Invoke-Command -ComputerName 'CLIENT01' -ScriptBlock {
 }
 ```
 
-Event 7040 recorded WinRM changing from manual to automatic startup. The selected query for event 7036 returned no matches; Spooler state changes were verified directly with `Get-Service`.
+Event 7040 recorded WinRM changing from manual to automatic startup.
